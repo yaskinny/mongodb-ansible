@@ -1,0 +1,58 @@
+---
+- name: replicaset initialize and create users
+  become: true
+  when: inventory_hostname == _targetHost
+  block:
+  - debug:
+      msg:
+      - |2
+        will use this payload for rs.initiate() on host {{ hostvars[_targetHost]['inventory_hostname'] }}
+      - |2
+        {{ _initiate_payload }}
+  - name: initiate replicaset
+    community.mongodb.mongodb_shell:
+      db: admin
+      eval: |
+        rs.initiate({{ _initiate_payload }})
+  - name: write message for user
+    debug:
+      msg: "replicaset initiated, pausing execution for 20 seconds"
+  - name: pause a little bit til primary get elected
+    pause:
+      seconds: 20
+  - name: create root user
+    no_log: true
+    community.mongodb.mongodb_user:
+      name: "{{ _admin_username }}"
+      password: "{{ _admin_password }}"
+      database: admin
+      state: present
+      roles: root
+      create_for_localhost_exception: /tmp/initiate
+      replica_set: "{{ _rs_name }}"
+  - name: create other users provided with '_user' variable
+    ## check if _user is defined
+    ## and it is iterable and not string or map ( == slice )
+    ## and its length more than 0
+    no_log: true
+    when: >
+      _users is defined
+      and
+      _users is iterable
+      and
+      (_users is not string and _users is not mapping)
+      and
+      _users | length > 0
+    community.mongodb.mongodb_user:
+        name: "{{ item.name }}"
+        password: "{{ item.password }}"
+        login_database: admin
+        login_password: "{{ _admin_password }}"
+        login_user: "{{ _admin_username }}"
+        roles: "{{ item.roles }}"
+        state: present
+        database: "{{ item.database }}"
+        replica_set: "{{ _rs_name }}"
+    loop:
+      "{{ _users }}"
+...

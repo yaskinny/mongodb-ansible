@@ -1,0 +1,42 @@
+---
+## where to save keyFile on remote host
+_keyFile_path: /etc/mongo.keyFile
+
+## path to data directory for mongodb
+_dbPath: /var/lib/mongodb
+
+## where host to run some commands to initialize replicaset
+## default is first host in your mongo group in your inventory file
+_targetHost: "{{ (groups['mongo'])[0] }}"
+
+## there is a template which create initiate config for your replicaset
+## if you don't want to use this payload, write it yourself and set that
+## for _initiate_payload
+_initiate_payload: "{{ lookup('template','templates/initiate.json.j2') }}"
+
+## username for your first default user
+_admin_username: root
+
+## password for default user
+## !NOTE:
+## CHANGE ME
+_admin_password: ChangeMe123
+
+
+## replicaset name
+_rs_name: development
+
+## log related
+_logVerbosity: 0
+_logPath: /var/log/mongodb/mongo.log
+_logAppend: 'false'
+_logRotate: rename
+
+## address to listen on
+_address: 0.0.0.0
+_port: 27017
+
+
+## oplog size
+_oplogSizeMB: 8096
+...

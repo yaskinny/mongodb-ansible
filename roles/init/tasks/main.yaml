@@ -1,0 +1,8 @@
+---
+- name: keyfile
+  import_tasks: keyfile.yaml
+- name: preinit
+  import_tasks: preinit.yaml
+- name: init
+  import_tasks: init.yaml
+...

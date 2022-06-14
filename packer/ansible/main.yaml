@@ -1,0 +1,59 @@
+---
+- hosts: all
+
+  tasks:
+  ## CHORES
+  - name: cleanup
+    become: true
+    block:
+    - name: remove some packages
+      apt:
+        state: absent
+        name: "{{ item }}"
+      loop:
+      - unattended-upgrades
+    - name: copy snapd remover script
+      copy:
+        src: files/remove-snapd.sh
+        dest: /root/remove-snapd.sh
+        owner: root
+        group: root
+        mode: "0755"
+    - name: execute snapd remover script
+      command:
+        cmd: /root/remove-snapd.sh
+
+  ## MONGO
+  - name: mongo installation
+    become: true
+    block:
+    - name: add mongo apt repository gpg key
+      apt_key:
+        url: 'https://www.mongodb.org/static/pgp/server-5.0.asc'
+        validate_certs: true
+    - name: add mongo repository
+      apt_repository:
+        filename: mongodb-org-5.0
+        mode: "0644"
+        repo: |2
+          deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/5.0 multiverse
+        state: present
+        ## it causes errors usually, update cache at install task
+        update_cache: false
+    - name: install mongodb
+      apt:
+        update_cache: true
+        state: present
+        name: mongodb-org
+    - name: hold mongodb stuff
+      dpkg_selections:
+        name: "{{ item }}"
+        selection: hold
+      loop:
+      - mongodb-org
+      - mongodb-org-database
+      - mongodb-org-server
+      - mongodb-org-shell
+      - mongodb-org-mongos
+      - mongodb-org-tools
+...

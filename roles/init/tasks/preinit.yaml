@@ -1,0 +1,70 @@
+---
+- name: config
+  become: true
+  block:
+  - name: add records to hosts file
+    blockinfile:
+      block: "{{ lookup('template','templates/hosts.j2') }}"
+      path: /etc/hosts
+  - name: copy config template for mongod
+    template:
+      src: templates/mongod.conf.j2
+      dest: /etc/mongod.conf
+      owner: mongodb
+      group: mongodb
+      mode: "0600"
+  - name: copy keyFile
+    copy:
+      src: files/keyFile
+      dest: "{{ _keyFile_path }}"
+      owner: mongodb
+      group: mongodb
+      mode: "0600"
+  - name: check if data dir owner is mongodb user
+    stat:
+      path: "{{ _dbPath }}"
+    changed_when: false
+    ignore_errors: true
+    register: _dbPath_check
+  - name: create data dir if it already does not exist
+    file:
+      path: "{{ _dbPath }}"
+      state: directory
+      owner: mongodb
+      group: mongodb
+      mode: "0700"
+    when: not _dbPath_check.stat.exists
+  - name: set correct permission on data directory
+    file:
+      path: "{{ _dbPath }}"
+      mode: "0700"
+      owner: mongodb
+      group: mongodb
+    when: >
+      _dbPath_check.stat.exists
+      and
+      (
+      _dbPath_check.stat.pw_name != 'mongodb'
+      or
+      _dbPath_check.stat.gr_name != 'mongodb'
+      or
+      _dbPath_check.stat.mode != "0700"
+      )
+  - name: install pip3 to install pymongo with it
+    when: inventory_hostname == _targetHost
+    apt:
+      name: python3-pip
+      state: present
+    # for mongo 5 >= it needs pymongo 3.12+
+  - name: install pymongo
+    when: inventory_hostname == _targetHost
+    pip:
+      executable: pip3
+      name: pymongo>3.12
+  - name: start mongodb
+    become: true
+    service:
+      name: mongod
+      state: started
+      enabled: true
+...

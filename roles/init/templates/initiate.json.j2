@@ -1,0 +1,46 @@
+{
+  _id: "{{ _rs_name }}",
+  protocolVersion: 1,
+  {% if _rs_writeConcern is defined -%}
+  writeConcernMajorityJournalDefault: {{ _rs_WriteConcern }}
+  {% endif %}
+
+  members: [
+  {% for i in range(groups['mongo'] | length) -%}
+  {% set host = groups['mongo'][i] -%}
+  {% if hostvars[host]['_rs_isArbiter'] is defined and hostvars[host]['_rs_isArbiter'] %}
+    {% set vote = 1 %}
+  {% elif hostvars[host]['_rs_priority'] is defined and hostvars[host]['_rs_priority'] > 0 %}
+    {% set vote = 1 %}
+  {% elif hostvars[host]['_rs_priority'] is defined and hostvars[host]['_rs_priority'] == 0 %}
+    {% set vote = 0 %}
+  {% elif hostvars[host]['_rs_canVote'] is defined and hostvars[host]['_rs_canVote'] %}
+    {% set vote = 1 %}
+  {% else %}
+    {% set vote = 1 %}
+  {% endif -%}
+{
+    _id: {{ hostvars[host]['_rs_id'] | default(i,true) }},
+    host: "{{ hostvars[host]['inventory_hostname']  }}",
+    {% if hostvars[host]['_rs_isArbiter'] is defined %}
+    arbiterOnly: {{ hostvars[host]['_rs_isArbiter'] }},
+    {% endif -%}
+    {% if hostvars[host]['_rs_buildIndexes'] is defined %}
+    buildIndexes: {{ hostvars[host]['_rs_buildIndexes'] }},
+    {% endif -%}
+    {% if hostvars[host]['_rs_isHidden'] is defined %}
+    hidden: {{ hostvars[host]['_rs_isHidden'] }},
+    {% endif -%}
+    priority: {{ hostvars[host]['_rs_priority'] | default(1, true) }},
+    {% if hostvars[host]['_rs_isHidden'] is defined %}
+    secondayDelaySecs: {{ hostvars[host]['_rs_delay'] | default(0, true) }},
+    {% endif -%}
+    votes: {{ vote }}
+
+    }{%- if not loop.last -%},
+    {% endif -%}
+
+  {% endfor %}
+
+  ]
+}

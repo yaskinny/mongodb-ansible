@@ -1,0 +1,44 @@
+---
+systemLog:
+  verbosity: {{ _logVerbosity }}
+  quiet: false
+  traceAllExceptions: false
+  destination: file
+  path: {{ _logPath }}
+  logAppend: {{ _logAppend }}
+  logRotate: {{ _logRotate }}
+
+processManagement:
+  fork: false
+
+net: 
+  port: {{ _port }}
+  bindIp: {{ _address }}
+  ipv6: false
+
+security:
+  keyFile: '{{ _keyFile_path }}'
+  clusterAuthMode: keyFile
+  clusterIpSourceAllowlist:
+  - 127.0.0.0/8
+  {% for host in groups['mongo'] -%}
+  - {{ hostvars[host]['ansible_env'].SSH_CONNECTION.split(' ')[2] }}/32
+  {% endfor %}
+
+storage:
+  dbPath: {{ _dbPath }}
+  journal:
+    enabled: true
+    commitIntervalMs: 100
+  directoryPerDB: false
+  syncPeriodSecs: 60
+  engine: wiredTiger
+  oplogMinRetentionHours: 0
+
+operationProfiling:
+  mode: off
+
+replication:
+  oplogSizeMB: {{ _oplogSizeMB }}
+  replSetName: {{ _rs_name }}
+...

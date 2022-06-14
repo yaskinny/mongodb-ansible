@@ -1,0 +1,20 @@
+---
+- name: create keyFile on ansible runner host
+  delegate_to: 127.0.0.1
+  run_once: true
+  block:
+  - name: check if a keyFile is present
+    stat:
+      path: files/keyFile
+    register: _keyFile_check
+    changed_when: false
+    ignore_errors: true
+  - name: create keyFile
+    shell: >
+      openssl rand -base64 754 > files/keyFile && chmod 0600 files/keyFile
+    when: not _keyFile_check.stat.exists
+  - name: change permission on keyFile
+    command: >
+      chmod 0600 files/keyFile
+    when: not _keyFile_check.stat.exists
+...
