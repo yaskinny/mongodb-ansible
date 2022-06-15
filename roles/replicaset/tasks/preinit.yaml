@@ -50,17 +50,6 @@
       or
       _dbPath_check.stat.mode != "0700"
       )
-  - name: install pip3 to install pymongo with it
-    when: inventory_hostname == _targetHost
-    apt:
-      name: python3-pip
-      state: present
-    # for mongo 5 >= it needs pymongo 3.12+
-  - name: install pymongo
-    when: inventory_hostname == _targetHost
-    pip:
-      executable: pip3
-      name: pymongo>3.12
   - name: start mongodb
     become: true
     service:

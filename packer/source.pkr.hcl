@@ -1,6 +1,6 @@
 source "vagrant" "mongodb" {
   communicator = "ssh"
-  source_path = "ubuntu/focal64"
+  source_path = "local_focal"
   provider = "virtualbox"
   add_force = true
 }

@@ -1,6 +1,6 @@
 [defaults]
-inventory= hosts
-host_key_checking=false
+inventory=hosts
+host_key_checking=true
 interpreter_python=/usr/bin/python3
 [privilege_escalation]
 [persistent_connection]

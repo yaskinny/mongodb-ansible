@@ -1,0 +1,91 @@
+---
+- name: download exporter
+  block:
+  - name: set archive url to download
+    shell: >
+      curl -Ls https://api.github.com/repos/percona/mongodb_exporter/releases/latest
+      | grep -P 'browser_download_url.*linux-amd64\.tar\.gz\"$'
+      | awk -F'"' '{print $4}'
+    register: _exporter_download_url
+    changed_when: false
+  - name: set checksum
+    shell: >
+      curl -Ls
+      $(curl -s https://api.github.com/repos/percona/mongodb_exporter/releases/latest
+      | grep -P 'https://.*checksums\.txt'
+      | awk -F'"' '{print $4}')
+      | grep 'linux-amd64.tar.gz$'
+      | awk '{print $1}'
+    register: _exporter_sha256hash
+    changed_when: false
+  - name: download exporter
+    get_url:
+      checksum: "sha256:{{ _exporter_sha256hash.stdout }}"
+      dest: "{{ _exporter_path }}"
+      force: no
+      mode: "0644"
+      owner: "{{ ansible_user }}"
+      group: "{{ ansible_user }}"
+      url: "{{ _exporter_download_url.stdout }}"
+- name: deploy and start exporter
+  become: true
+  block:
+  - name: create group for mongodb_exporter
+    group:
+      name: "{{ _exporter_user }}"
+      system: true
+      state: present
+  - name: create user for mongodb_exporter
+    user:
+      name: "{{ _exporter_user }}"
+      group: "{{ _exporter_user }}"
+      state: present
+      shell: /usr/bin/false
+      password_lock: true
+      create_home: false
+      system: true
+  - name: install tools to be able to unarchive
+    apt:
+      update_cache: true
+      cache_valid_time: 3600
+      name: "{{ item }}"
+      state: present
+    loop:
+    - xz-utils
+    - gzip
+    - zip
+    - unzip
+  - name: unarchive exporter
+    command: >
+      tar 
+      -C /usr/local/bin/
+      -zxvf {{ _exporter_path }}
+      --strip-components=1
+      --wildcards "*/mongodb_exporter"
+  - name: copy systemd related templates
+    template:
+      src: "{{ item.s }}"
+      dest: "{{ item.d }}"
+      owner: "{{ item.o }}"
+      group: "{{ item.o }}"
+      mode: "{{ item.m }}"
+    loop:
+    - s: templates/mongodb-exporter.default.j2
+      d: /etc/default/mongodb-exporter
+      o: root
+      m: "0600"
+    - s: templates/mongodb-exporter.service.j2
+      d: /etc/systemd/system/mongodb-exporter.service
+      o: root
+      m: "0644"
+  - name: start mongodb-exporter
+    systemd:
+      daemon_reload: true
+      enabled: true
+      name: mongodb-exporter
+      state: stopped
+  - name: remove exporter archive
+    file:
+      path: "{{ _exporter_path }}"
+      state: absent
+...

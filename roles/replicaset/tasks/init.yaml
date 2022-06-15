@@ -21,7 +21,7 @@
     pause:
       seconds: 20
   - name: create root user
-    no_log: true
+    no_log: false
     community.mongodb.mongodb_user:
       name: "{{ _admin_username }}"
       password: "{{ _admin_password }}"
@@ -30,11 +30,13 @@
       roles: root
       create_for_localhost_exception: /tmp/initiate
       replica_set: "{{ _rs_name }}"
-  - name: create other users provided with '_user' variable
+  - name: create other users provided with '_users' variable
     ## check if _user is defined
     ## and it is iterable and not string or map ( == slice )
     ## and its length more than 0
-    no_log: true
+    no_log: false
+    tags:
+    - mongodb_users
     when: >
       _users is defined
       and

@@ -1,0 +1,19 @@
+[Unit]
+Description="node exporter service"
+Wants=network-online.target
+After=network-online.target
+
+
+[Service]
+User={{ _exporter_user }}
+Group={{ _exporter_user }}
+ExecStart=/usr/local/bin/mongodb_exporter $OPTS
+WorkingDirectory=/tmp
+Type=simple
+KillMode=process
+EnvironmentFile=/etc/default/mongodb-exporter
+Restart=on-failure
+RestartSec=20s
+
+[Install]
+WantedBy=multi-user.target

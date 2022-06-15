@@ -2,18 +2,13 @@
 **!! THIS IS NOT YET COMPLETE. WORKING WITH MONGODB 5.0.9 ON UBUNTU 20.04 !!**  
 
 # Mongodb Ansible Role
-This Ansible role will deploy Mongodb replicaset for You.  
+This Ansible role will **deploy** Mongodb replicaset for You.  
+To install Mongodb and Mongodb exporter use `packer/ansible/` playbook.  
 
-# ROADMAP
- * [ ] Fix initiate payload
- * [ ] Add Molecule
- * [ ] Improve configuration
- * [ ] Documentation
- * [ ] Add Prometheus exporter role
- * [ ] Add TLS
- * [ ] Security Hardening
- * [ ] ProxMox Packer
 
+# Monitoring
+This Playbook uses [Percona Mongodb Exporter](https://github.com/percona/mongodb_exporter). For every Mongod You must deploy an exporter(for example, for 3 Mongod instances, You need 3 different exporters) because exporter uses `local` data to create some of its metrics, and `local` database in each Mongod instance has data related to that instance and it does not get replicated between replicas.  
+Best practice is to not deploy exporters on same host with Mongods.
 # Variables
 **Config file related:**  
 | name | description |   default |
@@ -53,6 +48,14 @@ This Ansible role will deploy Mongodb replicaset for You.
 | _rs_priority  | priority of node in replicaset | 1 |
 | _rs_delay | number of seconds to set delay for secondary node | 0 |
 
+**Exporter related:**
+| name | description |   default |
+|---   |          ---|        ---|
+| _exporter_args | arguments to pass to `mongodb_exporter` | `--collect-all` |
+| _exporter_mongodb_user | username for `mongodb_exporter` to authenticate with | - | 
+| _exporter_mongodb_password |  password for `_exporter_mongodb_user` | - |
+| _exporter_mongodb_addr |  address for `mongodb_exporter` to connect to mongodb | localhost:27017  |
+
 
 **User template:**
 ```yaml
@@ -67,3 +70,14 @@ _users:
     role: root
 ...
 ```
+# Roadmap
+ * [ ] Fix initiate payload
+ * [ ] Add Tags
+ * [ ] Add Molecule
+ * [ ] Add Single Instance Deployment
+ * [ ] Add Sharded Cluster Deployment
+ * [ ] Documentation
+ * [ ] Improve Configuration
+ * [ ] Add TLS
+ * [ ] Security Hardening
+ * [ ] System Performance Tuning

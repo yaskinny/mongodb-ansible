@@ -1,1 +1,8 @@
 files/keyFile
+vars
+ansible.cfg
+hosts
+roles/nuke/
+test.yaml
+packer/vagrant-iso
+.vagrant

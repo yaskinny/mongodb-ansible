@@ -1,6 +1,10 @@
 ---
-- hosts: all
+- hosts: mongo
+  vars_files:
+  - vars.example.yaml
 
   roles:
-  - role: init
+  - role: nuke
+  - role: replicaset
+  - role: exporter
 ...

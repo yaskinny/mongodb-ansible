@@ -1,0 +1,28 @@
+---
+- name: deploy and start exporter
+  become: true
+  block:
+  - name: copy systemd related templates
+    template:
+      src: templates/mongodb-exporter.default.j2
+      dest: /etc/default/mongodb-exporter
+      owner: root
+      group: root
+      mode: "0600"
+  - name: start mongodb-exporter
+    systemd:
+      enabled: true
+      name: mongodb-exporter
+      state: restarted
+  - name: check mongodb-exporter is started
+    command: >
+      systemctl is-active mongodb-exporter
+    ignore_errors: true
+    register: _exporter_systemd_check
+- name: check if mongodb-exporter service is started
+  assert:
+    that:
+    - _exporter_systemd_check.rc == 0
+    success_msg: "mongodb-exporter is up and running"
+    fail_msg: "failed to start mongodb-exporter"
+...

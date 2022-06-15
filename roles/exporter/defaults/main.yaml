@@ -1,0 +1,5 @@
+---
+_exporter_args: '--collect-all'
+_exporter_mongodb_addr: 'localhost:27017'
+_exporter_mongodb_endpoint: "mongodb://{{ _exporter_mongodb_user }}:{{ _exporter_mongodb_password }}@{{ _exporter_mongodb_addr }}"
+...

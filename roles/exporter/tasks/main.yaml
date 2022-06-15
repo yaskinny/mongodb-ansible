@@ -1,0 +1,4 @@
+---
+- name: config and start exporter
+  import_tasks: deploy.yaml
+... 

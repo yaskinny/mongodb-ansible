@@ -1,0 +1,31 @@
+---
+- name: cleanup
+  become: true
+  block:
+  - name: remove some packages
+    apt:
+      update_cache: true
+      state: "{{ item.s }}"
+      name: "{{ item.n }}"
+    loop:
+    - n: unattended-upgrades
+      s: absent
+    - n: python3-pip
+      s: present
+  - name: copy snapd remover script
+    copy:
+      src: files/remove-snapd.sh
+      dest: /root/remove-snapd.sh
+      owner: root
+      group: root
+      mode: "0755"
+  - name: execute snapd remover script
+    command:
+      cmd: /root/remove-snapd.sh
+  # for mongo 5 >= it needs pymongo 3.12+
+  - name: install pymongo
+    pip:
+      executable: pip3
+      extra_args: --system
+      name: pymongo>3.12
+...

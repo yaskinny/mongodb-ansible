@@ -1,0 +1,18 @@
+---
+## DO NOT PUT YOUR PASSWORDS UNENCRYPTED
+
+## create a monitoring user to use for mongodb_exporter
+_users:
+- name: monitoring
+  password: qwerqwer
+  database: admin
+  roles:
+  - db: admin
+    role: clusterMonitor
+  - db: local
+    role: read
+
+
+_exporter_mongodb_user: monitoring
+_exporter_mongodb_password: qwerqwer
+...
