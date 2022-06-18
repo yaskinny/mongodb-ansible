@@ -6,3 +6,5 @@ roles/nuke/
 test.yaml
 packer/vagrant-iso
 .vagrant
+*pkrvars.hcl
+*.log

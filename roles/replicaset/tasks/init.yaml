@@ -21,7 +21,7 @@
     pause:
       seconds: 20
   - name: create root user
-    no_log: false
+    no_log: true
     community.mongodb.mongodb_user:
       name: "{{ _admin_username }}"
       password: "{{ _admin_password }}"
@@ -34,7 +34,7 @@
     ## check if _user is defined
     ## and it is iterable and not string or map ( == slice )
     ## and its length more than 0
-    no_log: false
+    no_log: true
     tags:
     - mongodb_users
     when: >
