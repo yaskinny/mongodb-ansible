@@ -5,7 +5,7 @@ systemLog:
   traceAllExceptions: false
   destination: file
   path: {{ _logPath }}
-  logAppend: {{ _logAppend }}
+  logAppend: {{ _logAppend | bool | lower }}
   logRotate: {{ _logRotate }}
 
 processManagement:
@@ -30,7 +30,7 @@ storage:
   journal:
     enabled: true
     commitIntervalMs: 100
-  directoryPerDB: false
+  directoryPerDB: {{ _directoryPerDB | bool | lower }}
   syncPeriodSecs: 60
   engine: wiredTiger
   oplogMinRetentionHours: 0

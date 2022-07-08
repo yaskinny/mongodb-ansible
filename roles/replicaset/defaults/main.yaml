@@ -39,4 +39,6 @@ _port: 27017
 
 ## oplog size
 _oplogSizeMB: 8096
+
+_directoryPerDB: 'true'
 ...

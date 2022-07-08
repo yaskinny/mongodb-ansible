@@ -1,5 +1,4 @@
 files/keyFile
-vars
 ansible.cfg
 hosts
 roles/nuke/
